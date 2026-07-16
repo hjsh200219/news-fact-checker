@@ -2,8 +2,8 @@
   "name": "news-fact-checker-marketplace",
   "description": "Fact-check news articles by URL — reads bot-blocked sites via insane-search, cross-verifies claims against multiple independent sources, and renders a Korean verdict report.",
   "owner": {
-    "name": "edb",
-    "url": "https://github.com/"
+    "name": "hjsh200219",
+    "url": "https://github.com/hjsh200219"
   },
   "plugins": [
     {

@@ -16,11 +16,11 @@
   출처로 붕괴**시킨 뒤 "독립 출처 ≥2"를 강제. 못 채우면 정직하게 `검증 불가`.
 - **정직성**: 모든 근거에 URL, 모델지식 vs 웹검증 구분, 의견/예측은 검증 대상에서 분리, 한계 명시.
 
-## 설치 (로컬)
+## 설치
 
 ```
-# 1) 마켓플레이스 등록 (이 저장소 루트의 절대경로)
-/plugin marketplace add /Users/hoshin/workspace/ProjectMarketing/news-fact-checker
+# 1) 마켓플레이스 등록 (GitHub)
+/plugin marketplace add hjsh200219/news-fact-checker
 
 # 2) 플러그인 설치
 /plugin install news-fact-checker
@@ -28,6 +28,9 @@
 # 3) 사용
 /factcheck https://www.yna.co.kr/view/AKR20260625132900504
 ```
+
+로컬 클론에서 설치하려면 1)을 저장소 루트 절대경로로 대체:
+`/plugin marketplace add <클론경로>`
 또는 그냥 자연어로: "이 기사 진짜야? <URL>", "fact-check this: <URL>".
 
 ## insane-search 자동 설치 (동의 기반)
