@@ -1,0 +1,20 @@
+{
+  "name": "news-fact-checker",
+  "version": "0.1.0",
+  "description": "뉴스 기사 URL을 팩트체크한다. 봇 차단 사이트는 insane-search 엔진으로 우회해 읽고, 웹검색 + 다중 독립 출처 교차검증으로 핵심 주장을 검증하여 종합 판정(사실/거짓)을 한국어 리포트로 낸다. Fact-check news: verify news article, is this news true, 뉴스 팩트체크, 기사 사실확인, 가짜뉴스 검증.",
+  "author": {
+    "name": "edb"
+  },
+  "homepage": "https://github.com/",
+  "license": "MIT",
+  "keywords": [
+    "fact-check",
+    "news",
+    "verification",
+    "korean",
+    "bypass",
+    "insane-search",
+    "cross-verification",
+    "misinformation"
+  ]
+}

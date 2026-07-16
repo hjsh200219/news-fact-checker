@@ -1,0 +1,25 @@
+{
+  "name": "news-fact-checker-marketplace",
+  "description": "Fact-check news articles by URL — reads bot-blocked sites via insane-search, cross-verifies claims against multiple independent sources, and renders a Korean verdict report.",
+  "owner": {
+    "name": "edb",
+    "url": "https://github.com/"
+  },
+  "plugins": [
+    {
+      "name": "news-fact-checker",
+      "description": "뉴스 URL 팩트체크 — 차단 사이트는 insane-search로 우회하여 읽고, 다중 독립 출처 교차검증으로 사실/거짓 판별. Fact-check a news article by URL with source cross-verification.",
+      "source": "./plugins/news-fact-checker",
+      "category": "research",
+      "tags": [
+        "fact-check",
+        "news",
+        "verification",
+        "korean",
+        "bypass",
+        "insane-search",
+        "cross-verification"
+      ]
+    }
+  ]
+}
