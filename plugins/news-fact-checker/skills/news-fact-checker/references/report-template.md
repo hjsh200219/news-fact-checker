@@ -10,7 +10,8 @@
 - 출처: {언론사} / 작성: {기자명·데이트라인}
 - 일자: {발행일}
 - URL: {원문 URL}
-- 취득 경로: {WebFetch | insane-search engine | MCP-Playwright | 축소모드}{ · SUSPECT_OK(소프트취득) 표기 시}
+- 취득 경로: {WebFetch | insane-search engine | MCP-Playwright | 축소모드}{ · SUSPECT_OK(소프트취득) · timeout 표기 시}
+- 엔진 provenance: {engine_version} / {engine_commit(짧게)}{ · 축소모드면 "해당 없음"}
 
 {축소 모드일 때만: > ⚠️ 도달성 저하 모드 — insane-search 미사용(미설치/미동의). 차단 사이트 확증이 제한될 수 있음.}
 
@@ -21,9 +22,12 @@
 ## 핵심 주장별 검증
 | # | 주장 | 판정 | 유효출처(붕괴 후) | stance | 근거 출처 |
 |---|------|------|-------------------|--------|-----------|
-| 1 | {주장1 요약} | {라벨} | {N} | {지지 M / 반박 K} | {출처1 URL}, {출처2 URL} |
-| 2 | {주장2 요약} | {라벨} | {N} | … | … |
+| 1 | {주장1 요약} | {라벨} | 지지 {supporting_effective_count} / 반박 {refuting_effective_count} | {지지 M / 반박 K} | {클러스터별 대표 URL 전부} |
+| 2 | {주장2 요약} | {라벨} | … | … | … |
 | … | | | | | |
+
+> 각 행의 유효출처 수는 `independence.py`의 `supporting_effective_count`/`refuting_effective_count`와
+> **정확히 일치**해야 한다. 렌더 값이 reducer 결과와 다르면 리포트를 생성하지 말고 원인을 먼저 해소한다(FR-12).
 
 ## 검증 대상 아님 (의견 / 예측 / 당위)
 - {주장} — {opinion | prediction | normative}: {한 줄 설명}
@@ -35,7 +39,8 @@
 
 ## 한계 · 주의
 - {해당하는 것만: SUSPECT_OK 소프트취득 / paywall로 확증 제한 / 축소 모드 / 통신사 재발행 다수 /
-  단일 원출처 / 죽은 링크 / 예산 소진으로 일부 검증불가 / 발행 시점 이후 상황 변동 가능 / python·git 부재}
+  단일 원출처 / 단일 1차 자료(독립 반박 부족으로 거짓 미확정) / 죽은 링크 / fetch timeout /
+  예산 소진으로 일부 검증불가 / 발행 시점 이후 상황 변동 가능 / python·git 부재}
 - 본 리포트는 보조 자료이며 최종 권위가 아니다(assistive, not authoritative). 중요한 판단은 원문과
   1차 자료를 직접 확인하기 바랍니다.
 
@@ -47,3 +52,7 @@ _생성 시각: {YYYY-MM-DD HH:MM}_
 - `[모델지식]` 태그가 붙은 근거만으로 `사실`/`거짓`을 확정하지 않는다(웹 미확인 → 최대 `일부 사실`/`검증 불가`).
 - 주장 요약은 원문 왜곡 없이 압축. 필요하면 원문 인용구를 짧게 병기.
 - 종합 판정 배지는 6라벨 중 하나 정확히. 신뢰도는 상/중/하 중 하나.
+- 확정 판정(`사실`/`거짓`)은 reducer `verdict_gate`를 만족해야만 렌더한다. stance별 유효출처 수는
+  reducer 결과와 일치(불일치 시 리포트 생성 실패).
+- 엔진 provenance(version/commit)를 헤더에 기록해 같은 URL의 결과 차이가 엔진 변화인지 콘텐츠 변화인지
+  사후 감사할 수 있게 한다(축소 모드면 "해당 없음").

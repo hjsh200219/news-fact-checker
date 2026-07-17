@@ -1,0 +1,75 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      PLUGIN: plugins/news-fact-checker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Docs consistency (verify-docs)
+        run: bash scripts/verify-docs.sh
+
+      - name: Shell syntax check
+        run: bash -n $PLUGIN/scripts/*.sh
+
+      - name: Python compile
+        run: python3 -m py_compile $PLUGIN/scripts/*.py $PLUGIN/tests/fake_engine/engine/*.py
+
+      - name: Type check (mypy)
+        run: |
+          python3 -m pip install --quiet mypy
+          python3 -m mypy --ignore-missing-imports \
+            $PLUGIN/scripts/independence.py \
+            $PLUGIN/scripts/url_policy.py \
+            $PLUGIN/scripts/parse_engine_status.py
+
+      - name: Unit tests (network-free contract tests)
+        run: python3 -m unittest discover -s $PLUGIN/tests -p 'test_*.py' -v
+
+      - name: Reducer selftest
+        run: python3 $PLUGIN/scripts/independence.py --selftest
+
+      - name: Validate manifests (JSON schema-shape gate)
+        run: |
+          python3 -m json.tool .claude-plugin/marketplace.json > /dev/null
+          python3 -m json.tool $PLUGIN/.claude-plugin/plugin.json > /dev/null
+
+  plugin-validate:
+    name: claude plugin validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate marketplace + plugin
+        run: |
+          claude plugin validate .
+          claude plugin validate plugins/news-fact-checker

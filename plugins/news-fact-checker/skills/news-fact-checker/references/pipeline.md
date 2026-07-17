@@ -1,6 +1,6 @@
 # 파이프라인 상세 (P0 → P12)
 
-각 단계: 입력 → 행동 → 통과조건. SKILL.md의 하네스 규칙(H1–H6)을 전제로 한다.
+각 단계: 입력 → 행동 → 통과조건. SKILL.md의 하네스 규칙(H0–H6)을 전제로 한다.
 
 ## P0 — 의존성 해석 (1회)
 - 행동: `resolve_engine.sh` 실행. 성공 시 마지막 stdout 줄 = engine home → `export INSANE_SEARCH_HOME=...`.
@@ -8,8 +8,11 @@
 - 통과: engine home 확보(정상) 또는 축소 모드 플래그 설정.
 
 ## P1 — Intake
-- 행동: URL 정규화(트래킹 파라미터 제거는 하되 경로 보존), 스킴 검증.
-- 통과: 유효한 http(s) URL.
+- 행동: URL 정규화(트래킹 파라미터 제거는 하되 경로 보존), 스킴 검증. **실제 네트워크 목적지 정책은
+  `fetch_article.sh`(→ `url_policy.py`)가 요청 직전에 강제**한다 — HTTP(S)만 허용, 사용자정보 포함 URL·
+  loopback·link-local·private·reserved·multicast·클라우드 메타데이터(169.254.169.254) 거부. 위반 시
+  네트워크 없이 `unsafe_url`(exit 4). 같은 정책이 P8 근거 URL에도 적용된다.
+- 통과: 유효한 http(s) URL(정책 위반은 `unsafe_url`로 조기 종료).
 
 ## P2a — pre-fetch 라우팅 (URL/HEAD 신호만)
 - 행동: 확장자/도메인 패턴으로만 분기. 동영상 플랫폼 → `yt-dlp --dump-json`/자막, SNS 포스트 → 포스트 JSON,
@@ -44,14 +47,19 @@
   취득. 1차 자료(당사자 공식 발표/원문/공공데이터) 우선 탐색. 차단된 확증 출처도 engine으로 시도.
 - 통과: 주장별 확증 후보 출처 집합. 예산 소진 시 남은 주장 `검증불가(예산)`.
 
-## P9 — 독립성 붕괴 + stance
-- 행동: 주장별 수집 출처를 `[{url,title,body,byline,dateline}]`로 `independence.py`에 넣어 붕괴
-  → `effective_count`. 각 출처 stance(supports/refutes/unrelated) 분류, unrelated 제외.
-- 통과: 주장별 **붕괴 후 유효 출처 수** + stance 확정.
+## P9 — Evidence Reducer (stance 포함)
+- 행동: 각 출처의 stance(supports/refutes/unrelated)를 **먼저** 판정한 뒤 주장별 수집 출처를
+  `[{url,stance,title,body,byline,dateline,source_type}]`로 `independence.py`에 넣는다. reducer가
+  `unrelated`를 카운트 전 제거하고 supports/refutes를 각각 붕괴 → `supporting_effective_count`·
+  `refuting_effective_count`·클러스터별 링크 사유/유사도·`verdict_gate` 반환. 스키마 오류는 exit 2.
+- 통과: 주장별 stance별 **붕괴 후 유효 출처 수** + `verdict_gate` 확정.
 
-## P10 — 주장 판정
-- 행동: [verdict-taxonomy.md](verdict-taxonomy.md) 6라벨 부여. 유효 출처 <2면 `검증불가`. 신뢰도 산정.
-- 통과: 주장별 판정 + 신뢰도 + 인용 출처.
+## P10 — 주장 판정 (게이트=reducer 결과)
+- 행동: [verdict-taxonomy.md](verdict-taxonomy.md) 6라벨 부여. 확정은 `verdict_gate`를 따른다 —
+  `can_be_true`면 `사실` 가능, `can_be_false`면 `거짓` 가능, 둘 다 아니면 비확정 라벨. 신뢰도 산정
+  (유효 출처 수·stance 일치·1차 자료 유무·SUSPECT_OK 반영). **1차 자료 1건이 독립 출처 최소 수를
+  대체하지 않는다.**
+- 통과: 주장별 판정 + 신뢰도 + 인용 출처(stance별 클러스터 수는 reducer 결과와 일치).
 
 ## P11 — 종합 판정 합성
 - 행동: 주장별 판정 종합 → 기사 전체 판정 + 신뢰도(상/중/하) + 1줄 근거 요약.
