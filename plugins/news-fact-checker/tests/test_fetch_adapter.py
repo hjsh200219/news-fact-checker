@@ -121,6 +121,15 @@ class TestFetchAdapter(unittest.TestCase):
         self.assertEqual(proc.returncode, 1)
         self.assertEqual(st["stop_reason"], "timeout")
 
+    def test_timeout_suppresses_partial_body(self):
+        # engine flushed a partial body before wedging — a truncated article must
+        # never reach the caller as content.
+        proc, st = run_fetch(scenario="hang_after_body",
+                             extra_env={"NFC_FETCH_TIMEOUT": "1"})
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(st["stop_reason"], "timeout")
+        self.assertEqual(proc.stdout, "")
+
     # FR-6 — structured status carries the full schema
     def test_status_schema_complete(self):
         _, st = run_fetch(scenario="strong_ok")

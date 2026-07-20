@@ -17,7 +17,8 @@ bash "${SKILL_DIR}/../../scripts/fetch_article.sh" "<URL>" [--no-playwright]
   담당하며 verdict를 알려진 enum과 대조 — 인식 불가 토큰은 `parse_ok:false`+`stop_reason:status_unparsed`로
   **명시적 호환 실패** 처리(빈 verdict를 조용히 만들지 않음).
 - **네트워크 목적지 정책(요청 전)**: 어댑터는 engine 호출 전에 `url_policy.py`로 URL을 검사한다.
-  비 HTTP(S)·사용자정보 포함 URL·사설/loopback/link-local/reserved/multicast/메타데이터로 해석되는
+  비 HTTP(S)·사용자정보 포함 URL(빈 userinfo `http://@host` 포함)·비표준 포트(80/443 외)·
+  사설/loopback/link-local/reserved/multicast/CGNAT/메타데이터로 해석되는
   호스트는 **네트워크 없이** `unsafe_url`(exit 4)로 거부한다. 정책은 호스트를 실제 IP로 해석해
   (DNS) 검사하므로 IP-리터럴 위장(10진/8진/16진·`nip.io` 류)도 걸러진다. 어댑터가 fetch하도록
   받은 **모든 URL**(원문 + P8 근거 URL)에 동일 적용된다.
@@ -72,7 +73,8 @@ resolve 실패. capability-reduced 모드(WebFetch/WebSearch만)로 진행 + 리
 
 ### stop_reason == timeout (비종료)
 단일 fetch가 wall-clock 예산 초과. exit 1(비종료)이므로 R6 escalation 또는 백오프 재시도 대상.
-조기 `접근불가` 금지 — 다만 리포트에 timeout을 명시한다.
+조기 `접근불가` 금지 — 다만 리포트에 timeout을 명시한다. timeout 시 stdout은 **비어 있다** —
+잘린 partial body는 본문으로 방출하지 않는다.
 
 ## MCP preflight
 R6 escalation(Tier2)이 필요한데 MCP Playwright 서버가 **연결되어 있지 않으면**("configured ≠ connected"),

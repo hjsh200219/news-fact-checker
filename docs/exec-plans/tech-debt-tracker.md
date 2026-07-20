@@ -12,6 +12,7 @@
 | TD-3 | Low | WONTFIX(한계) | engine 내부 redirect/DNS-rebinding은 SSRF 정책 밖(외부 엔진 위임) |
 | TD-4 | Medium | OPEN → 이 Phase에서 부분 해소 | `.claude/settings.json` permissions.deny 부재 |
 | TD-5 | Low | OPEN | `.gitignore`에 `.mypy_cache/` 미포함(현재 트리에 존재) |
+| TD-6 | Low | OPEN | `parse_engine_status.py`의 불릿 regex가 stderr의 모든 `•` 라인을 `untried_routes`로 수집 |
 
 ---
 
@@ -65,6 +66,18 @@ H0는 지금까지 문서 규칙에만 의존했다. 심층 방어로 `.claude/s
 추가했다.
 
 - 남은 조치: 프로젝트 고유 민감 경로(자격증명·토큰 장부 등)가 감사에서 추가로 발견되면 deny 확장.
+
+## TD-6 — untried_routes 불릿 수집이 섹션 스코프 없음
+
+**심각도: Low · 상태: OPEN (엔진 핀 갱신 시 확인 포인트)**
+
+`parse_engine_status.py`는 `^\s*•\s+` 패턴으로 stderr의 **모든** 불릿 라인을 `untried_routes`로
+수집한다. 현재 엔진 계약(핀 `v0.8.2`)은 route 목록만 불릿으로 내므로 정확하지만, 엔진이 다른
+진단에 불릿을 쓰기 시작하면 무관한 라인이 route로 오염되고 `parse_ok`에도 걸리지 않는다.
+섹션 헤더가 엔진 stderr 계약에 없어서 지금은 스코프를 좁힐 앵커가 없다(좁히면 기존 계약 파손).
+
+- 재검토 트리거: `INSANE_SEARCH_COMMIT` 핀 갱신 시 새 버전의 stderr 불릿 사용처를 확인하고,
+  route 섹션에 식별 가능한 헤더가 생기면 regex를 그 스코프로 좁힌다.
 
 ## TD-5 — .gitignore에 .mypy_cache/ 미포함
 

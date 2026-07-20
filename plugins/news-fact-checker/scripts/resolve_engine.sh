@@ -44,7 +44,9 @@ log() { printf '%s\n' "$*" >&2; }
 smoke_test() {
   local home="$1"
   [ -f "$home/engine/__main__.py" ] || { log "  smoke: no engine/__main__.py at $home"; return 1; }
-  python3 - "$home" 2>>/dev/null <<'PY'
+  # stderr passes through: the SMOKE_FAIL lines below are the only diagnostic
+  # that says WHICH import/field failed — do not swallow them.
+  python3 - "$home" <<'PY'
 import importlib, sys, dataclasses
 home = sys.argv[1]
 sys.path.insert(0, home)
@@ -136,6 +138,9 @@ if [ "${NFC_CONSENT:-no}" = "yes" ]; then
   mkdir -p "$VENDOR_PARENT" 2>/dev/null || true
   TMP_DIR="$(mktemp -d "$VENDOR_PARENT/insane-search.tmp.XXXXXX")" || { log "resolve: mktemp failed"; echo "DEGRADE"; exit 3; }
   cleanup_tmp() { rm -rf "$TMP_DIR" 2>/dev/null || true; }
+  # Interrupted clone (Ctrl-C, kill) must not leave a stray temp dir behind.
+  # After a successful install TMP_DIR has been renamed away → rm is a no-op.
+  trap cleanup_tmp EXIT
 
   log "resolve: consent granted — cloning $CLONE_URL @ $REF then verifying pin $EXPECTED_COMMIT"
   if git clone --depth 1 --branch "$REF" "$CLONE_URL" "$TMP_DIR" >&2 2>&1; then

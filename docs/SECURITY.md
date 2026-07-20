@@ -24,9 +24,16 @@
 
 거부 대상:
 - **비 HTTP(S) 스킴** — `file://`, `ftp://`, `gopher://`, `data:` 등. 허용은 `http`/`https`만.
-- **userinfo 포함 URL** — `http://user:pass@host`, `http://evil@host` (`USERINFO_FORBIDDEN`).
+- **userinfo 포함 URL** — authority에 `@`가 있으면 전부 거부: `http://user:pass@host`,
+  `http://evil@host`, 그리고 urlsplit이 username=""로 보고하는 빈 userinfo 형태
+  `http://@host`까지 (`USERINFO_FORBIDDEN`).
+- **비표준 포트** — 80/443(또는 포트 생략)만 허용 (`PORT_NOT_ALLOWED`). 공인 IP 위의
+  내부 서비스 포트(redis 6379, admin 8080 등) probing을 차단한다.
 - **비공개 목적지로 해석되는 호스트** — loopback / link-local / private / reserved / multicast /
   unspecified, 그리고 클라우드 메타데이터 `169.254.169.254`(+ `fd00:ec2::254`)를 명시 deny.
+- **버전 독립 특수 대역 명시 deny** — Python 버전별 `is_private` 커버리지에 의존하지 않도록
+  `0.0.0.0/8`, CGNAT `100.64.0.0/10`(RFC 6598), `192.0.0.0/24`, `198.18.0.0/15`를
+  명시 네트워크 리스트로 거부한다 (CGNAT은 3.11에서도 `is_private=False`).
 - **IPv4-mapped IPv6** — `::ffff:127.0.0.1`류는 언랩 후 검사.
 - **IP 리터럴 위장** — 10진/8진/16진 인코딩·`nip.io`류는 호스트를 실제 IP로 해석(DNS)해 검사하므로 걸린다.
 - **DNS 실패/미해석** — fail closed(`RESOLVE_FAILED`/`RESOLVE_EMPTY`, 요청 안 함).

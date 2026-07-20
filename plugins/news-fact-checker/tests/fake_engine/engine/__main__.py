@@ -5,7 +5,8 @@ status parser can be exercised without any network:
 
   FAKE_ENGINE_SCENARIO ∈ {
     strong_ok, weak_ok, suspect_ok, auth_required, not_found,
-    blocked, rate_limited, unknown, fatal, hang, unknown_verdict, phrase_variant
+    blocked, rate_limited, unknown, fatal, hang, hang_after_body,
+    unknown_verdict, phrase_variant
   }
   FAKE_ENGINE_SLEEP   seconds to sleep before responding (for the timeout test)
 
@@ -92,6 +93,13 @@ def main() -> int:
     if scenario == "hang":
         time.sleep(30)
         return emit(True, "strong_ok", body=BODY, exit_code=0)
+    if scenario == "hang_after_body":
+        # partial body already flushed, then the engine wedges — the adapter must
+        # kill it AND suppress the truncated body (timeout ⇒ empty stdout).
+        sys.stdout.write(BODY)
+        sys.stdout.flush()
+        time.sleep(30)
+        return emit(True, "strong_ok", exit_code=0)
     if scenario == "fatal":
         print("Traceback (most recent call last):", file=sys.stderr)
         print("RuntimeError: engine exploded", file=sys.stderr)

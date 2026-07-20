@@ -49,9 +49,11 @@
 
 ## P9 — Evidence Reducer (stance 포함)
 - 행동: 각 출처의 stance(supports/refutes/unrelated)를 **먼저** 판정한 뒤 주장별 수집 출처를
-  `[{url,stance,title,body,byline,dateline,source_type}]`로 `independence.py`에 넣는다. reducer가
-  `unrelated`를 카운트 전 제거하고 supports/refutes를 각각 붕괴 → `supporting_effective_count`·
-  `refuting_effective_count`·클러스터별 링크 사유/유사도·`verdict_gate` 반환. 스키마 오류는 exit 2.
+  `[{url,stance,title,body,byline,dateline,source_type}]`로 `independence.py`에 넣는다. 각 항목은
+  `title`/`body` 중 최소 하나가 비어있지 않아야 한다(텍스트 없는 출처는 넣지 말 것 — `EMPTY_TEXT`
+  exit 2). reducer가 `unrelated`를 카운트 전 제거하고 supports/refutes를 각각 붕괴 →
+  `supporting_effective_count`·`refuting_effective_count`·클러스터별 링크 사유/유사도·`verdict_gate`
+  반환. 스키마 오류는 exit 2.
 - 통과: 주장별 stance별 **붕괴 후 유효 출처 수** + `verdict_gate` 확정.
 
 ## P10 — 주장 판정 (게이트=reducer 결과)

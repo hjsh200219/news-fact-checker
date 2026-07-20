@@ -18,6 +18,7 @@ FAKE_MAP = {
     "internal.example.com": ["10.0.0.5"],
     "meta.example.com": ["169.254.169.254"],
     "mixed.example.com": ["93.184.216.34", "127.0.0.1"],  # one bad IP → reject all
+    "cgnat.example.com": ["100.64.0.1"],                  # CGNAT shared space via DNS
 }
 
 
@@ -58,6 +59,32 @@ class TestUrlPolicy(unittest.TestCase):
     def test_userinfo_forbidden(self):
         self.assertFalse(allowed("http://user:pass@news.example.com/x"))
         self.assertEqual(code("http://user@news.example.com/x"), "USERINFO_FORBIDDEN")
+
+    def test_empty_userinfo_forbidden(self):
+        # urlsplit reports http://@host as username="" (falsy) — must still reject.
+        self.assertFalse(allowed("http://@news.example.com/x"))
+        self.assertEqual(code("http://@news.example.com/x"), "USERINFO_FORBIDDEN")
+
+    def test_cgnat_literal_rejected(self):
+        self.assertFalse(allowed("http://100.64.0.1/x"))
+        self.assertEqual(code("http://100.64.0.1/x"), "UNSAFE_ADDRESS")
+
+    def test_cgnat_via_dns_rejected(self):
+        self.assertFalse(allowed("http://cgnat.example.com/x"))
+        self.assertEqual(code("http://cgnat.example.com/x"), "UNSAFE_ADDRESS")
+
+    def test_version_independent_special_ranges_rejected(self):
+        # explicitly denied networks — must not depend on is_private coverage
+        for ip in ("0.1.2.3", "192.0.0.170", "198.18.0.1"):
+            self.assertFalse(allowed(f"http://{ip}/x"), ip)
+
+    def test_non_web_port_rejected(self):
+        self.assertFalse(allowed("https://news.example.com:6379/a"))
+        self.assertEqual(code("http://news.example.com:8080/x"), "PORT_NOT_ALLOWED")
+
+    def test_explicit_web_ports_pass(self):
+        self.assertTrue(allowed("http://news.example.com:80/x"))
+        self.assertTrue(allowed("https://news.example.com:443/x"))
 
     def test_non_http_schemes(self):
         for u in ("gopher://news.example.com/x", "ftp://news.example.com/x",

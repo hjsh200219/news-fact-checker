@@ -25,12 +25,12 @@
 ### L3 스크립트 구성
 
 - **Python 계약(순수함수, stdlib only)**
-  - `independence.py` (363) — Evidence Reducer. stance별 신디케이션 클러스터 붕괴 → `verdict_gate`. `--selftest` 8 픽스처.
-  - `url_policy.py` (180) — fetch 경계의 네트워크 목적지 정책(SSRF pre-flight). `classify_url()` + `--selftest`.
+  - `independence.py` (381) — Evidence Reducer. stance별 신디케이션 클러스터 붕괴 → `verdict_gate`. `--selftest` 9 픽스처.
+  - `url_policy.py` (213) — fetch 경계의 네트워크 목적지 정책(SSRF pre-flight). `classify_url()` + `--selftest`.
   - `parse_engine_status.py` (130) — engine stderr → 기계 status. verdict enum 검증, phrasing drift를 명시적 호환 실패로 승격.
 - **Bash 어댑터**
-  - `fetch_article.sh` (151) — thin 단일 호출 어댑터. url_policy pre-flight → engine home cd → `python3 -m engine` (wall-clock timeout) → parse_engine_status.
-  - `resolve_engine.sh` (184) — engine 해석 ladder(env→cache→marketplace→vendor→consent clone→DEGRADE). commit-pin + atomic install.
+  - `fetch_article.sh` (155) — thin 단일 호출 어댑터. url_policy pre-flight → engine home cd → `python3 -m engine` (wall-clock timeout) → parse_engine_status.
+  - `resolve_engine.sh` (189) — engine 해석 ladder(env→cache→marketplace→vendor→consent clone→DEGRADE). commit-pin + atomic install.
   - `setup.sh` (19) — 최초 1회 비차단 사전 점검(python3/git 존재 경고).
 
 ## 의존성 방향 (허용 에지)

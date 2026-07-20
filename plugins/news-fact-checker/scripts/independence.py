@@ -19,6 +19,9 @@ Contract (pure stdlib, no external deps):
   stdin  : JSON list of items, each:
              {url, stance, title?, body?, byline?, dateline?, source_type?}
            stance ∈ {"supports","refutes","unrelated"}   (REQUIRED)
+           At least one of title/body must be non-empty: textless items cannot
+           be checked for syndication overlap, and counting them as independent
+           would inflate the verdict gate → rejected with EMPTY_TEXT.
   stdout : JSON reducer result (schema_version 2 — see _EMPTY / collapse below)
   stderr : on bad input, a single JSON error line {error,code,index?,field?}
 
@@ -190,6 +193,11 @@ def _validate(items: Any) -> list[dict]:
         for f in ("title", "body", "byline", "dateline", "source_type"):
             if f in it and not isinstance(it[f], str):
                 raise InputError("BAD_FIELD", "field must be a string", index=i, field=f)
+        if not ((it.get("title") or "").strip() or (it.get("body") or "").strip()):
+            raise InputError("EMPTY_TEXT",
+                             "item must carry a non-empty title or body "
+                             "(textless evidence cannot be assessed for independence)",
+                             index=i)
         out.append(it)
     return out
 
@@ -333,7 +341,17 @@ def _selftest() -> int:
     r8 = reduce(bridge)
     assert r8["supporting_effective_count"] == 2, f"F8 expected 2, got {r8}"
 
-    print("independence.py selftest: OK (8 fixtures)")
+    # F9: textless item (no title/body) → EMPTY_TEXT. Counting textless items as
+    # independent would open the gate on evidence nobody can cross-check.
+    try:
+        reduce([{"url": "t1", "stance": "supports"},
+                {"url": "t2", "stance": "supports"}])
+        raise AssertionError("F9 expected InputError EMPTY_TEXT")
+    except InputError as e:
+        assert e.code == "EMPTY_TEXT", f"F9 code: {e.code}"
+        assert e.index == 0, f"F9 index: {e.index}"
+
+    print("independence.py selftest: OK (9 fixtures)")
     return 0
 
 

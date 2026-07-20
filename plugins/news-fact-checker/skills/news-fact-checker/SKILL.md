@@ -94,7 +94,9 @@ description: >
   타 언론사/1차 자료). 차단된 확증 출처도 engine으로 시도.
 - **P9 — Evidence Reducer (stance 포함, 결정론적).** 각 출처의 stance(supports/refutes/unrelated)를
   **먼저** 판정한 뒤, 수집 출처를 `[{url,stance,title,body,byline,dateline,source_type}]` JSON으로 만들어
-  `python3 "${SKILL_DIR}/../../scripts/independence.py"`에 stdin으로 넣는다. reducer가 `unrelated`를 카운트
+  `python3 "${SKILL_DIR}/../../scripts/independence.py"`에 stdin으로 넣는다. 각 항목은 `title`/`body` 중
+  최소 하나가 비어있지 않아야 한다(텍스트를 못 얻은 출처는 근거로 넣지 않는다 — `EMPTY_TEXT` exit 2).
+  reducer가 `unrelated`를 카운트
   전에 제거하고 supports/refutes를 **각각** 붕괴해 `supporting_effective_count`·`refuting_effective_count`·
   클러스터별 링크 사유/유사도·`verdict_gate`를 돌려준다. 스키마 오류는 traceback 없이 exit 2.
 - **P10 — 주장 판정 (게이트=reducer 결과).** 확정은 `verdict_gate`를 따른다: `can_be_true`면 `사실`

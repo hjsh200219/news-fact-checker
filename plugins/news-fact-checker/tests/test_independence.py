@@ -149,6 +149,26 @@ class TestReducer(unittest.TestCase):
         self.assertEqual(r.returncode, 2)
         self.assertEqual(json.loads(r.stderr)["code"], "BAD_JSON")
 
+    def test_empty_text_exit2(self):
+        # textless items cannot be assessed for independence — counting them as
+        # independent clusters would inflate the verdict gate, so reject loudly.
+        r = run_cli('[{"url":"x","stance":"supports"}]')
+        self.assertEqual(r.returncode, 2)
+        err = json.loads(r.stderr)
+        self.assertEqual(err["code"], "EMPTY_TEXT")
+        self.assertEqual(err["index"], 0)
+
+    def test_whitespace_only_text_exit2(self):
+        r = run_cli('[{"url":"x","stance":"supports","title":" ","body":"\\n"}]')
+        self.assertEqual(r.returncode, 2)
+        self.assertEqual(json.loads(r.stderr)["code"], "EMPTY_TEXT")
+
+    def test_title_only_passes(self):
+        res = independence.reduce([
+            {"url": "a", "stance": "supports", "title": "축구 대표 명단 발표"},
+        ])
+        self.assertEqual(res["supporting_effective_count"], 1)
+
     def test_non_string_field_exit2(self):
         r = run_cli('[{"url":"x","stance":"supports","body":123}]')
         self.assertEqual(r.returncode, 2)

@@ -16,7 +16,8 @@
 #     validates the verdict enum and flags phrasing drift as an explicit compat failure.
 #
 # Output contract to the caller (the skill):
-#   * stdout  = article body (may be empty on hard failure)
+#   * stdout  = article body (may be empty on hard failure; suppressed on timeout —
+#               a truncated partial body is never emitted as content)
 #   * stderr  = human diagnostics + one machine line:  NFC_STATUS <json>
 #               json = {schema_version, exit, ok, parse_ok, status_source, verdict,
 #                       grid_exhausted, stop_reason, untried_routes[],
@@ -130,18 +131,21 @@ run_engine() {
 run_engine "$@"
 CODE=$?
 
-# stream the engine's own stderr + body to our channels
+# stream the engine's own stderr to our diagnostics channel
 cat "$ERRFILE" >&2 || true
-cat "$BODYFILE" || true
 
 # --- timeout: explicit, non-terminal (M-5). Caller may escalate (R6). ---
 # 124 = GNU/coreutils timeout; 137 = SIGKILL after --kill-after; 143 = SIGTERM
 # (busybox timeout / bash watchdog). A written marker is authoritative.
+# Checked BEFORE streaming the body: a killed engine may have flushed a partial
+# body, and a truncated article must never reach the caller as content.
 if [ "$CODE" -eq 124 ] || [ "$CODE" -eq 137 ] || [ "$CODE" -eq 143 ] || [ -f "$MARKER" ]; then
-  log "fetch: engine exceeded ${FETCH_TIMEOUT}s budget — reporting timeout (non-terminal)"
+  log "fetch: engine exceeded ${FETCH_TIMEOUT}s budget — reporting timeout (non-terminal, partial body suppressed)"
   emit_status 1 false "" timeout "$HOME_DIR"
   exit 1
 fi
+
+cat "$BODYFILE" || true
 
 # --- parse status from the single call's stderr (no second fetch) ---
 VER="$(prov_field "$HOME_DIR" version)"; COM="$(prov_field "$HOME_DIR" commit)"

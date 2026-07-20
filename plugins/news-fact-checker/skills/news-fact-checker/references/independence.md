@@ -17,7 +17,9 @@ echo '[{"url":"...","stance":"supports","title":"...","body":"...",
   | python3 "${SKILL_DIR}/../../scripts/independence.py"
 ```
 - `url`, `stance`는 **필수**. `stance` ∈ `supports | refutes | unrelated`.
-- `title`/`body`/`byline`/`dateline`/`source_type`는 선택(문자열).
+- `title`/`body`/`byline`/`dateline`/`source_type`는 선택(문자열). 단 **`title`/`body` 중
+  최소 하나는 비어있지 않아야** 한다 — 텍스트 없는 항목은 신디케이션 중복을 검사할 수 없고,
+  독립 출처로 세면 게이트가 인플레이션되므로 `EMPTY_TEXT`(exit 2)로 거부한다.
 
 ## 출력 (schema_version 2)
 ```json
@@ -74,10 +76,11 @@ echo '[{"url":"...","stance":"supports","title":"...","body":"...",
 - 최상위가 리스트가 아니면 → exit 2, `{"code":"TOP_NOT_LIST"}`.
 - 항목이 object가 아니거나 `url`/`stance` 누락·오형, 선택 필드가 문자열이 아니면 → exit 2,
   `{"code": "...", "index": i, "field": "..."}` (짧은 오류 코드, **traceback 없음**).
+- `title`/`body` 모두 비어있으면(공백 포함) → exit 2, `{"code":"EMPTY_TEXT","index":i}`.
 - 잘못된 JSON → exit 2, `{"code":"BAD_JSON"}`. 내부 예외 → exit 1, 로컬 경로 비노출.
 
 ## 임계값 튜닝
 `TAU`(0.85), `TAU_WIRE`(0.35), `TAU_TOPIC`(0.20), `CHAR_K`(3)은 스크립트 상단 상수.
-`--selftest`가 8개 픽스처(신디케이션 붕괴 / 독립 지지 2건 / 같은-wire-다른-주제 비붕괴 /
-같은-기자-다른-주제 비붕괴 / 지지+무관 / 단일 반박 / 독립 반박 2건 / transitive bridge 비병합)로
-회귀를 지킨다. 임계값 변경은 이 고정 벤치마크 결과와 함께 리뷰한다.
+`--selftest`가 9개 픽스처(신디케이션 붕괴 / 독립 지지 2건 / 같은-wire-다른-주제 비붕괴 /
+같은-기자-다른-주제 비붕괴 / 지지+무관 / 단일 반박 / 독립 반박 2건 / transitive bridge 비병합 /
+textless 항목 거부)로 회귀를 지킨다. 임계값 변경은 이 고정 벤치마크 결과와 함께 리뷰한다.
