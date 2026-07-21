@@ -4,3 +4,4 @@
 
 - [engine-pin-update](engine-pin-update.md) — insane-search 엔진 commit-pin(SHA) 갱신 절차
 - [health-stack](health-stack.md) — 검증 명령 모음 (순수 stdlib, mypy 별도 설치)
+- [distribution-options](distribution-options.md) — 배포 제약: Chrome 확장 직접 불가, 구독 OAuth 서드파티 금지(BYOK만)
