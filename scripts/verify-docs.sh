@@ -111,6 +111,19 @@ else
 fi
 
 # ---- summary -----------------------------------------------------------------
+# Entry-doc size gate — "map, not handbook" (~100 lines, ceiling 120). Warning only.
+ENTRY_LIMIT=120
+for entry in AGENTS.md agent.md; do
+  [ -f "$REPO_ROOT/$entry" ] || continue
+  entry_lines=$(wc -l < "$REPO_ROOT/$entry" | tr -d ' ')
+  if [ "$entry_lines" -gt "$ENTRY_LIMIT" ]; then
+    printf '  WARN  %s is %s lines — over the %s-line ceiling; move detail under docs/\n' "$entry" "$entry_lines" "$ENTRY_LIMIT"
+  else
+    printf '  ok    %s is %s lines (ceiling %s)\n' "$entry" "$entry_lines" "$ENTRY_LIMIT"
+  fi
+  break
+done
+
 echo
 echo "======================================================"
 if [ "$FAIL" -eq 0 ]; then

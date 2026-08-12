@@ -70,17 +70,6 @@ claude plugin validate plugins/news-fact-checker
 작업은 상태로 끝난다: `DONE` | `DONE_WITH_CONCERNS` | `BLOCKED` | `NEEDS_CONTEXT`.
 동일 접근 3회 실패 시 중단·에스컬레이션.
 
-## LLM 코딩 행동 원칙
-
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
-
-Tradeoff: These guidelines bias toward caution over speed. For trivial tasks, use judgment.
-
-1. Think Before Coding — Don't assume. Don't hide confusion. Surface tradeoffs. State assumptions explicitly; if multiple interpretations exist, present them; if simpler approach exists, say so; if unclear, stop and ask.
-2. Simplicity First — Minimum code that solves the problem. No speculative features, no single-use abstractions, no unrequested configurability, no error handling for impossible scenarios. If 200 lines could be 50, rewrite it.
-3. Surgical Changes — Touch only what you must. Don't improve adjacent code. Match existing style. Mention unrelated dead code but don't delete it. Remove only imports/vars/functions YOUR changes made unused.
-4. Goal-Driven Execution — Transform tasks into verifiable goals (write failing test first, then make it pass). For multi-step tasks, state a plan with verify steps. Loop independently until criteria met.
-
 ## 세션 시작 시 필수
 
 새 세션 시작 시 `.claude-project/HANDOFF.md`가 있으면 먼저 읽어 이전 세션 컨텍스트(진행/다음 단계/주의)를 파악한다.
