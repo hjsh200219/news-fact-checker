@@ -83,8 +83,8 @@ bash plugins/news-fact-checker/tests/run.sh
 검사 범위: reducer stance 게이트·독립성 신호·입력 오류 계약, URL 목적지 정책(SSRF/메타데이터),
 엔진 상태 파싱(verdict enum·phrasing drift 호환 실패), fetch exit 0/1/2/3/4·suspect_ok·rate_limited·
 timeout, commit-pin 불일치·smoke 실패 시 기존 사본 보존과 원자적 설치, 프롬프트 인젝션 하네스 규칙.
-GitHub Actions(`.github/workflows/ci.yml`)가 Linux·macOS에서 shell 문법·`py_compile`·`mypy`·단위
-테스트·매니페스트·`claude plugin validate`를 실행한다.
+위 게이트(shell 문법·`py_compile`·`mypy`·단위 테스트·매니페스트)는 push 전 로컬에서
+`bash plugins/news-fact-checker/tests/run.sh`로 돌린다. GitHub Actions CI는 2026-09-23 폐지했다.
 
 ## 한계
 - 통신사 재발행이 유일 원출처인 사안은 `검증 불가`가 될 수 있다(안전한 기본값).

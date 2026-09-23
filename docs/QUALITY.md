@@ -9,7 +9,7 @@
 bash plugins/news-fact-checker/tests/run.sh
 ```
 
-CI(`.github/workflows/ci.yml`)가 같은 게이트를 Linux·macOS에서 강제한다.
+push 전 로컬에서 돌린다. GitHub Actions CI(Linux·macOS 매트릭스, 평균 19분)는 2026-09-23 폐지했다.
 
 ## 게이트 목록
 
